@@ -1,7 +1,7 @@
 {
 	"id": "inline-block-embeds",
 	"name": "Inline Block Embeds",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"changes": [
 		"The Pro notice of Inline Block Embeds now says that one payment turns on Pro in every NoteMods plugin."
 	],

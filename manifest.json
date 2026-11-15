@@ -1,7 +1,7 @@
 {
 	"id": "inline-block-embeds",
 	"name": "Inline Block Embeds",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"minAppVersion": "1.13.4",
 	"description": "Render block embeds inline, inside a sentence, as text in the line, with a hover preview and a jump to the source block.",
 	"author": "Michael Lip",

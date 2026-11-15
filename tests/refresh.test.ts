@@ -3,6 +3,7 @@ import { Component, MarkdownRenderer } from 'obsidian';
 import { InlineEmbeds, MAX_IN_FLIGHT, type EmbedRef, type Plan } from '../src/render';
 import { ReadingView } from '../src/reading';
 import { blockKey } from '../src/embeds';
+import { budget } from './time-scale';
 
 // A 3 level chain C1 > C2 > C3 with the metadata cache and the renderer stubbed: the refresh logic of render.ts runs
 // as it does in the app. MarkdownRenderer.render writes the text into one paragraph, as a paragraph block renders.
@@ -102,7 +103,7 @@ function stub(): Stub {
 }
 
 async function drain(inline: InlineEmbeds, ms = 20000): Promise<void> {
-	const end = Date.now() + ms;
+	const end = Date.now() + budget(ms);
 	while (Date.now() < end && (inline.pending > 0 || inline.queued > 0)) await new Promise((r) => setTimeout(r, 5));
 	await new Promise((r) => setTimeout(r, 10));
 }
@@ -134,7 +135,7 @@ describe('render slots with many nested spans (review round 3, major)', () => {
 		expect(inline.queued).toBe(0);
 		expect(spans.every((s) => s.el.textContent === s.text)).toBe(true);
 		expect(inline.size).toBe(300 * 3 + 600 * 2);
-	}, 60000);
+	}, budget(60000));
 
 	it('PDF export path: the post processor promise of such a note resolves, with every span drawn', async () => {
 		const inline = stub();
@@ -155,7 +156,7 @@ describe('render slots with many nested spans (review round 3, major)', () => {
 		expect(paras.filter((t) => t === 'a n leaf n b').length).toBe(600);
 		expect(inline.pending).toBe(0);
 		expect(inline.queued).toBe(0);
-	}, 60000);
+	}, budget(60000));
 
 	it('owns and later drops the spans of a render that has no component', async () => {
 		const inline = stub();
@@ -247,7 +248,7 @@ describe('slots with heading embeds that Obsidian draws inside the render (revie
 		expect(inline.pending).toBe(0);
 		expect(inline.queued).toBe(0);
 		expect(els.filter((e) => e.textContent === 'p h leaf h p').length).toBe(300);
-	}, 60000);
+	}, budget(60000));
 
 	it('PDF export path: the post processor promise of a note with 300 such embeds resolves', async () => {
 		const { inline, reading } = coreLike();
@@ -263,5 +264,5 @@ describe('slots with heading embeds that Obsidian draws inside the render (revie
 		expect(paras.filter((t) => t === 'a p h leaf h p b').length).toBe(300);
 		expect(inline.pending).toBe(0);
 		expect(inline.queued).toBe(0);
-	}, 60000);
+	}, budget(60000));
 });
