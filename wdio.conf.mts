@@ -39,14 +39,17 @@ export const config: WebdriverIO.Config = {
 		browserVersion: appVersion,
 		'wdio:obsidianOptions': {
 			installerVersion,
-			plugins: ['.'],
+			...(process.env.OBSIDIAN_BINARY_PATH ? { binaryPath: process.env.OBSIDIAN_BINARY_PATH } : {}),
+			...(process.env.OBSIDIAN_APP_PATH ? { appPath: process.env.OBSIDIAN_APP_PATH } : {}),
+			plugins: ['.', ...(process.env.IBE_UPSTREAM_FIXTURE ? [{ path: process.env.IBE_UPSTREAM_FIXTURE, enabled: false }] : [])],
 			vault: 'test/e2e/vault',
 		},
 	})),
-	services: ['obsidian'],
+	services: [[path.resolve('test/e2e/isolated-service.ts'), {}]],
 	reporters: ['obsidian'],
 	// Shared download cache for every product; CI caches the same folder.
 	cacheDir,
 	mochaOpts: { ui: 'bdd', timeout: 120_000 },
 	logLevel: 'warn',
+	outputDir: 'dist/e2e-logs',
 };
