@@ -1,147 +1,116 @@
-# Inline Block Embeds
+# Inline Embeds Peng
 
-Inline Block Embeds draws a block embed that sits inside a sentence as text in the line, like a quote. Obsidian draws `![[Note#^block]]` as a framed box on its own line. With this plugin, `Confirm the facts in ![[Sources#^yield]] today.` reads as one sentence. You see the block text with a dotted underline, a hover preview and a way back to the source.
+A personal fork of [Inline Block Embeds](https://github.com/theluckystrike/inline-block-embeds), originally written by Michael Lip. It renders a block embed inside a sentence as inline text, with a source preview and navigation.
+
+All functionality in the upstream 1.0.4 Free and Pro editions is available without an account, payment, token, or license check. The plugin itself makes no network requests. Remote content rendered by Obsidian or other plugins is outside this claim.
+
+**Latest release:** `v1.0.5` · [GitHub Release](https://github.com/TheodorePeng/obsidian-inline-embeds-peng/releases/tag/1.0.5)
+
+## Install with BRAT
+
+[BRAT](https://github.com/TfTHacker/obsidian42-brat) is the distribution channel for this fork: it installs the plugin from the GitHub Release of this repository and can deliver later versions to the same vault.
+
+1. Install **BRAT** from Obsidian's Community Plugins and enable it.
+2. Open the command palette and run **BRAT: Add a beta plugin for testing**.
+3. Enter the repository `TheodorePeng/obsidian-inline-embeds-peng` and click **Add Plugin**.
+4. Open Settings → Community plugins, refresh the list, and enable **Inline Embeds Peng**.
+
+BRAT installs the plugin into `<vault>/.obsidian/plugins/inline-embeds-peng/`, using the plugin ID from the released `manifest.json`.
+
+To update, run **BRAT: Check for updates to all beta plugins and UPDATE** from the command palette. Auto-update on startup can be enabled in the `Obsidian42- BRAT` settings tab. To stay on one version, use **BRAT: Add a beta plugin with frozen version based on a release tag** and pick a tag such as `1.0.5`.
+
+Manual installation is an alternative to BRAT: copy `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/TheodorePeng/obsidian-inline-embeds-peng/releases/tag/1.0.5) into `<vault>/.obsidian/plugins/inline-embeds-peng/`.
+
+BRAT's own behavior can change over time, so check the [official BRAT documentation](https://tfthacker.com/BRAT) if a step no longer matches what is written here. This fork and the upstream plugin process the same embed syntax, so enable only one of them in the same vault.
+
+## 通过 BRAT 安装
+
+[BRAT](https://github.com/TfTHacker/obsidian42-brat) 是本 fork 的分发入口:它从本仓库的 GitHub Release 安装插件,并能在后续版本发布后把更新送进同一个 Vault。
+
+1. 在 Obsidian 的第三方插件市场安装 **BRAT** 并启用。
+2. 打开命令面板,运行 **BRAT: Add a beta plugin for testing**。
+3. 输入仓库地址 `TheodorePeng/obsidian-inline-embeds-peng`,点击 **Add Plugin**。
+4. 打开 设置 → 第三方插件,刷新列表,启用 **Inline Embeds Peng**。
+
+BRAT 依据 Release 中 `manifest.json` 的插件 ID,把插件安装到 `<vault>/.obsidian/plugins/inline-embeds-peng/`。
+
+更新方式:在命令面板运行 **BRAT: Check for updates to all beta plugins and UPDATE**;也可在 `Obsidian42- BRAT` 设置页开启启动时自动更新。若要固定在某个版本,使用 **BRAT: Add a beta plugin with frozen version based on a release tag**,选择 `1.0.5` 这样的 tag。
+
+不装 BRAT 也可以手动安装:从[最新 Release](https://github.com/TheodorePeng/obsidian-inline-embeds-peng/releases/tag/1.0.5)下载 `main.js`、`manifest.json`、`styles.css`,放进 `<vault>/.obsidian/plugins/inline-embeds-peng/`。
+
+BRAT 自身的行为会随版本变化,若实际步骤与上文对不上,请以[官方 BRAT 文档](https://tfthacker.com/BRAT)为准。本 fork 与上游插件处理同一套嵌入语法,同一个 Vault 里只能启用其中一个。
 
 ## Features
 
-### Inline block embeds
+- Paragraph and list-item block embeds in Live Preview and Reading view.
+- Inline Markdown formatting, including emphasis, links, and inline code.
+- List items without their bullet, number, or task checkbox.
+- Core Page Preview on hover and Ctrl/Cmd click to open the source block.
+- Source updates, including unsaved editor changes, propagate to existing embeds.
+- Missing blocks show the alias or link text; nested embeds stop at depth three or a loop.
+- Optional inline rendering of block embeds that occupy a whole line.
+- Dotted underline, soft background, and undecorated styles.
+- Reading-view post-processing is retained for the PDF rendering path.
 
-Write a block embed the usual way, inside a sentence. The plugin finds each `![[note#^id]]` and `![[note#^id|alias]]` with other text on its line and shows the block text in the line. The animation shows the same sentence before and after, and then the cursor in the embed.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/inline-block-embeds.gif" alt="A sentence with a block embed: first a framed box that breaks the line, then the block text inside the sentence, then the raw link when the cursor enters it" width="720">
-
-Free: paragraph blocks inline in Live Preview and Reading view, hover preview, Ctrl or Cmd click. Pro: list item blocks, every block embed inline, two more styles. $15 one time or $5 a month: [Sponsor](https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=inline-block-embeds).
-
-### The box that it replaces
-
-Without the plugin, Obsidian draws a block embed as a box with a frame, even in the middle of a sentence. The sentence breaks in two around it.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/without-plugin.png" alt="Live Preview without the plugin: each block embed in a sentence is a framed box on its own line" width="720">
-
-### Live Preview
-
-In Live Preview, the block text takes the place of the embed link. Bold, italic, links and inline code in the block look as they do in the source note. The block id marker `^yield` does not show. Put the cursor in the embed, or select text that touches it, and the raw `![[...]]` link comes back so that you can edit it. A plain click on the inline text does the same thing.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/live-preview.png" alt="Live Preview with the plugin: two sentences with block text inside them, underlined with dots" width="720">
-
-### Reading view and PDF export
-
-Reading view shows the same inline text in a span inside the paragraph. PDF export from Reading view keeps it, because export uses the same Markdown post processor.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/reading-view.png" alt="Reading view with the block text inside the sentences" width="720">
-
-### Hover preview and jump to the source
-
-Rest the pointer on the inline text to see the source block in the core page preview. Hold Ctrl (Cmd on macOS) and click to open the source note at the block in a new tab. The plugin adds itself to the list in "Settings → Page preview", so you can ask for Ctrl or Cmd there too.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/hover.png" alt="The core page preview of the source block, shown under the inline text" width="720">
-
-### Missing blocks
-
-When the note or the block does not exist, the plugin shows the alias, or the link text such as `Sources#^old-claim`, in the style of an unresolved link. Create the block, and the text fills in.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/missing.png" alt="The alias of a missing block, in the faded style of an unresolved link" width="720">
-
-### Nested embeds and loops
-
-A block can hold an inline embed of its own. The plugin follows them three levels deep, and a heading or note embed in between counts as a level. At the fourth level, or when a block comes back to itself, also through a heading embed, it shows the link text and stops. Two notes that embed each other cannot freeze the editor.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/loop.png" alt="Two blocks that embed each other: the text stops at the link text of the first block" width="720">
-
-### List items (Pro)
-
-With Pro, a list item block is inline too. The plugin removes the bullet, the number and the task box, so `- [ ] Call the field office ^call` reads as "Call the field office" inside your sentence.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/list-items.png" alt="A task from another note shown inline in a sentence, without its bullet and check box" width="720">
-
-### Every embed inline and styles (Pro)
-
-The Pro setting "Draw every block embed inline" also draws an embed that is alone on its line as plain text. Pro also adds two styles: a soft background, and none for text that looks like your own.
-
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/styles.png" alt="Block text with a soft background, including an embed alone on its line" width="720">
-
-## Install
-
-1. Open "Settings → Community plugins" and turn off restricted mode.
-2. Select "Browse", search for "Inline Block Embeds", then select "Install" and "Enable".
-
-To install by hand, copy `main.js`, `manifest.json` and `styles.css` from the latest release into `<vault>/.obsidian/plugins/inline-block-embeds/`. Then enable the plugin. You need Obsidian 1.13.4 or later.
+The plugin changes the presentation, not the Markdown stored in your notes.
 
 ## Usage
 
-There is nothing to set up. Open a note that has a block embed inside a sentence.
+Give a paragraph or list item a block ID, then embed it in another sentence:
 
-1. Give a paragraph a block id: end it with a space and `^id`, or copy a block link from its menu.
-2. In another note, write a sentence with `![[Note#^id]]` in it. Add `|alias` to name it.
-3. Read the sentence in Live Preview or Reading view.
+```markdown
+Hello **world**. ^greeting
 
-The plugin draws paragraph blocks inline (and list items with Pro). It leaves tables, code blocks, callouts, math blocks and headings as Obsidian draws them. An embed alone on its line also stays a box, unless the Pro setting is on. Embeds inside callouts and table cells follow the same rules in Reading view.
+Read ![[Sources#^greeting]] today.
+```
 
-The inline text follows the source. Edit the block in the other note, and the sentence changes in less than a second, also before Obsidian saves the file. The plugin never writes to your notes. It only changes how they look.
+Move the cursor into an embed to edit its original `![[...]]` syntax. A plain click reveals that syntax; Ctrl/Cmd click navigates to the source. Enable the core Page Preview plugin to use hover previews.
+
+Only block references using `#^id` are converted. Headings, whole-note embeds, ranges, tables, code, math, callout targets, and other unsupported block types keep their upstream/native behavior. Embeds inside reading-view table cells and callouts retain the upstream rules.
 
 ## Settings
 
-After a minor or major update, this plugin opens one What's new tab in the background. The tab and settings card suggest other NoteMods plugins and Zovo Chat and link to notemods.com for feedback ([privacy](https://notemods.com/privacy/)). The tab sends no data. Turn the tab off in Settings.
+| Setting | Behavior | Default |
+| --- | --- | --- |
+| Draw every block embed inline | Also render an embed that occupies a whole line as inline text | Off |
+| Inline style | Dotted underline, soft background, or none | Dotted underline |
 
-| Setting | What it does |
-| --- | --- |
-| Draw every block embed inline | Pro. Also draws an embed that is alone on its line inline. Off by default. |
-| Inline style | Pro. Dotted underline, soft background or none. Free uses the dotted underline. |
+List-item blocks are always available. There is no account, paid-feature toggle, login UI, promotional card, or automatic What's new page.
 
-<img src="https://raw.githubusercontent.com/theluckystrike/inline-block-embeds/HEAD/docs/settings.png" alt="The settings tab with the two settings first and the Pro section below them" width="720">
+## Build and install locally
 
-## Pro
+Requires Node >=24, npm >=11, and Obsidian >=1.13.4. Existing dependencies are retained. On this Mac, the wrapper selects Homebrew Node:
 
-To sign in and enable Pro:
+```bash
+./scripts/dev.sh test
+./scripts/dev.sh run lint
+./scripts/dev.sh run build
+```
 
-1. Sponsor via [GitHub Sponsors](https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=inline-block-embeds). A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply.
-2. In Obsidian, open the settings of Inline Block Embeds and select "Sign in with GitHub".
-3. The plugin copies a code and opens github.com/login/device. Paste the code there and approve.
+For a fresh checkout without dependencies, first run `./scripts/dev.sh ci`.
 
-If you sponsor after you sign in, select Refresh. A negative sponsorship answer turns Pro off.
+Manual installation from a local build is an alternative to BRAT: copy only `main.js`, `manifest.json`, and `styles.css` from the successful build into `<vault>/<configDir>/plugins/inline-embeds-peng/`, then enable **Inline Embeds Peng**. The normal config directory is `.obsidian`. This fork is distributed through GitHub Releases and is not submitted to the community plugin directory.
 
-## FAQ
+For ordinary updates in Peng's test Vault, use the unified deployment entry documented in `FORK.md`; it preserves `data.json`. Never copy the full repository or development dependencies into a Vault.
 
-### Does it change my notes?
+## Original plugin and settings
 
-No. The embed stays `![[Note#^id]]` in the file. Open and close a note, and the file is the same, byte for byte.
+This fork uses the independent ID `inline-embeds-peng`. The original uses `inline-block-embeds`. Both may be installed, but enable only one in a Vault because both process the same embed syntax.
 
-### Why is my embed still a box?
+The fork starts with its own default settings and does not import, move, or delete original settings, tokens, or sponsorship records. Existing `ibe-*` CSS markers and the npm package name are retained to keep the upstream diff small. The source project folder name does not determine the installed plugin ID.
 
-The embed is alone on its line, or the block is a table, a code block, a callout, a math block or a heading. Those keep the core look. A list item needs Pro.
+## Tests and evidence
 
-### Does it work with heading embeds or whole notes?
+`./scripts/dev.sh test` runs parser, editor-cache, rendering, refresh, settings, and production-dependency-graph regressions using mocks. `./scripts/dev.sh run build` includes TypeScript checking. `./scripts/dev.sh exec -- tsc --noEmit -p test/e2e/tsconfig.json` checks the existing real-app tests.
 
-No. It draws block embeds only, with `#^id`. Heading embeds, whole note embeds and ranges of blocks stay as Obsidian draws them.
+`./scripts/dev.sh run test:e2e` uses the existing WDIO Obsidian service. It copies its fixture Vault and may download desktop builds. It refuses to launch while another Obsidian process or shared CLI socket exists. Use `WDIO_MAX_INSTANCES=1` and explicit `OBSIDIAN_VERSIONS` app/installer pairs. It must not replace or restart the user's Obsidian application. A prepared upstream fixture can be included with `IBE_UPSTREAM_FIXTURE` for coexistence checks.
 
-### Can I edit the block from the sentence?
+Current execution results and limitations are recorded in [the 1.0.5 acceptance report](docs/acceptance-1.0.5.md). Automated mocks, app probes, native input, PDF export, and mobile/device results are distinguished there. Original assets in `docs/` remain upstream reference material and are not evidence of the fork's settings UI.
 
-Not in place. Ctrl or Cmd click opens the source block, and changes there show in the sentence at once.
+## Maintenance and license
 
-### How is this different from the CSS snippets in the forum?
+Personal changes remain on `personal`; `main` stays an upstream mirror. See [FORK.md](FORK.md) for development, deployment, and synchronization decisions.
 
-The snippets restyle the box and broke after Obsidian updates. This plugin reads the block with the public API and draws real inline text.
+Original project: [theluckystrike/inline-block-embeds](https://github.com/theluckystrike/inline-block-embeds). Original copyright: **Copyright (c) 2026 Michael Lip**. Fork maintained by [TheodorePeng](https://github.com/TheodorePeng).
 
-## Payment, account and network
-
-The core features are free. Pro features need a GitHub Sponsors sponsorship of theluckystrike: $5 a month or more, or $15 once. A total payment of $15 meets the payment requirement for Pro without further payment. Sign-in and the checks below still apply. Your notes stay readable and editable with or without Pro.
-
-[One payment turns on Pro in every NoteMods plugin](https://notemods.com/pro/).
-
-GitHub handles the payment. Sponsor at https://github.com/sponsors/theluckystrike?frequency=one-time&metadata_source=inline-block-embeds. You need no account for the free features. Pro needs the GitHub account that sponsors.
-
-Until you select "Sign in with GitHub" in the settings, Inline Block Embeds makes no network requests. Sign in uses the GitHub device flow. Inline Block Embeds sends its public client ID and the scope `read:user` to `https://github.com/login/device/code` and shows you a code. While you enter the code at https://github.com/login/device, it asks `https://github.com/login/oauth/access_token` every few seconds to check the sign-in status. The scope permits profile reads only. GitHub needs this access to show the sponsorship tier. It grants no repository scope and no write access.
-
-After sign in, Inline Block Embeds sends one query to `https://api.github.com/graphql`. It checks if the signed-in account sponsors theluckystrike. It asks for the tier and the total payment to theluckystrike. The plugin reuses a successful check for 7 days. Failed checks can retry after 6 hours. Select Refresh to request an earlier check. It sends no note content, file names or other vault data, and it has no telemetry.
-
-After a successful check, Pro can work offline for up to 14 days. Sign out or a negative sponsorship answer turns Pro off. The plugin stores the GitHub token through the secret storage API of Obsidian. It does not put the token in its saved settings or its local sponsorship data. The local storage of this device keeps your GitHub login, the tier and the time of the last check. Sign out clears the token. You can also revoke the access in your GitHub settings, under Applications.
-
-## Support
-
-Plugin page: [inline-block-embeds](https://notemods.com/plugins/inline-block-embeds/).
-
-Report bugs and ask for features in the GitHub issues of this repository. Add your Obsidian version and a small sample note.
-
-## Community
-
-Questions, bugs or plugin ideas? Talk to me and other Obsidian users in [Zovo Chat](https://t.me/+k2MM-BIc7SQ5OWM0) on Telegram. It has a topic for these plugins. You can also open an issue here.
+The original [MIT license](LICENSE) is preserved unchanged and included in the generated JavaScript header. Upstream licensing and promotion source modules remain for comparison and future merges, but are disconnected from the runtime entrypoint and excluded from the bundle. Releases are published manually from the `personal` branch so the published assets stay byte-identical to the verified local build; see [FORK.md](FORK.md) for the release procedure.

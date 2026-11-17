@@ -1,114 +1,101 @@
-# FORK.md — 个人 Fork 说明
+# Personal fork: Inline Embeds Peng
 
-> 本文件只在 `personal` 分支存在，上游不会有这个路径，因此永不冲突。
+## Repository and branches
 
-## 一、仓库关系
-
-| 角色 | 地址 | 用途 |
-| --- | --- | --- |
-| `upstream` | https://github.com/theluckystrike/inline-block-embeds | 原作者仓库，**只 fetch，不可 push**（push URL 已置为 `no_push_this_remote_is_read_only`） |
-| `origin` | https://github.com/TheodorePeng/inline-block-embeds | 我自己的 Fork，push 目标 |
-| 本地路径 | `/Users/peng/Documents/GitHub-Peng/ObsidianPlugins-Peng/inline-block-embeds-peng` | |
-
-- 原始许可证：**MIT**，`Copyright (c) 2026 Michael Lip`。`LICENSE` 保持原样，不得删除或修改版权声明。
-- 基线版本：`1.0.4`（上游 tag 为裸版本号，无 `v` 前缀）。
-- `minAppVersion`：`1.13.4`。
-
-## 二、分支约定
-
-| 分支 | 规则 |
+| Role | Value |
 | --- | --- |
-| `main` | **纯镜像**，只允许 `git merge --ff-only upstream/main`，永不本地提交 |
-| `personal` | 所有个人化改动（改功能、加特性、改名）都落在这里 |
+| Source directory | `/Users/peng/Documents/GitHub-Peng/ObsidianPlugins-Peng/obsidian-inline-embeds-peng` |
+| `origin` | `https://github.com/TheodorePeng/obsidian-inline-embeds-peng` |
+| `upstream` | `https://github.com/theluckystrike/inline-block-embeds` |
+| Upstream push URL | `no_push_this_remote_is_read_only` |
+| Upstream baseline | `1.0.4`, commit `d525a48742b1b7f89271f1cb4c7e2e37a7d40c03` |
+| First fork revision | `1.0.5` |
+| GitHub default branch | `personal` |
 
-`git config push.default = current`，防止误把 `personal` 推到 `origin/main`。
+`main` remains a pure upstream mirror. All personal changes stay on `personal`, and `personal` is the GitHub default branch of the fork, so a plain clone or a repository-based install resolves to the fork code instead of upstream. Retain history and review/merge upstream changes manually; conflicts in identity, startup, settings, tests, and documentation are expected to need review. No automatic synchronization is introduced. Synchronization does not authorize a push.
 
-### 同步上游
+## Settled product decisions
 
-```bash
-git switch main
-git fetch upstream
-git merge --ff-only upstream/main
-git push                      # 更新 fork 的 main
-git switch personal
-git merge main                # 关键：这一步别忘，否则 personal 会漂移
-```
+- Plugin ID: `inline-embeds-peng`; displayed name: `Inline Embeds Peng`.
+- Retain the npm package name `inline-block-embeds`, internal class names, setting keys, and `ibe-*` CSS/DOM markers.
+- Keep minimum Obsidian `1.13.4`, the mobile-compatible platform declaration, and the existing renderer.
+- All upstream Free/Pro capabilities work without account or network verification. List-item support is always available; `drawAll=false` and `style=underline` remain the defaults.
+- Remove account/licensing and promotion from startup/settings/commands. Keep their upstream source files unreferenced for easier comparison and merges; they must not enter the production bundle.
+- Retain only the two functional settings, `drawAll` and `style`.
+- The original ID `inline-block-embeds` is recorded for comparison only. Do not read, migrate, clear, or overwrite its settings, token, or sponsorship data.
+- Both plugins may be installed; enable only one at a time in the same Vault.
+- No new heading, whole-note, table/code/math/callout-target conversion, or in-place source editing.
+- The project directory and personal GitHub fork are named `obsidian-inline-embeds-peng`. This does not change the npm package name or plugin ID.
 
-### 查看我改了什么
+## License and attribution
 
-```bash
-git diff upstream/main personal
-```
+The original `LICENSE` remains unchanged: MIT, `Copyright (c) 2026 Michael Lip`. MIT grants modification and distribution subject to preserving its copyright and permission notice; it does not contain a personal-use-only restriction. This task's delivery is local and does not authorize publishing.
 
-## 三、开发环境
+The build includes the full license text in the JavaScript header so the installed runtime carries the notice. README retains upstream attribution and distinguishes the fork maintainer. Do not replace or erase original copyright.
 
-### Node 版本（重要）
+## Development
 
-上游 `package.json` 要求 `engines: { node: ">=24", npm: ">=11" }`，CI 固定 node 24.x。
-
-本机有多个 Node，**不要用错**：
-
-| 来源 | 版本 | 可用性 |
-| --- | --- | --- |
-| PATH 首位的 `node` | v22.22.2 | ❌ WorkBuddy 自带运行时，不能用于构建 |
-| Homebrew `/opt/homebrew/bin/node` | v26.8.2（npm 11.19.1） | ✅ 本项目使用这个 |
-| nvm 默认 | v22.17.0 | ❌ 不满足 engines |
-
-统一入口（强制 PATH）：
+Use the existing dependencies and lock file. `scripts/dev.sh` selects `/opt/homebrew/bin` before other Node installations (Node >=24, npm >=11).
 
 ```bash
-./scripts/dev.sh ci       # = npm ci
-./scripts/dev.sh run build
-./scripts/dev.sh run lint
 ./scripts/dev.sh test
+./scripts/dev.sh run lint
+./scripts/dev.sh run build
+./scripts/dev.sh exec -- tsc --noEmit -p test/e2e/tsconfig.json
+git diff --check
 ```
 
-### 命令
+`main.js` remains an ignored generated file, built in the source directory. Do not run `npm version`: the upstream version hook stages files. Keep manifest/package/lock-root versions and the compatibility table synchronized manually without staging or committing.
+
+## Test deployment
+
+Default Vault: `/Users/peng/Documents/GitHub-Peng/Obsidian AI Coding`.
+
+Plugin target: actual configuration directory + `plugins/inline-embeds-peng/`.
+
+Test notes: `_PluginTests/inline-embeds-peng/` only.
+
+Check realpaths, symlinks, the Obsidian registry, and runtime Vault identity before writes. CLI exit status and Vault names alone are insufficient. A working identity probe on this machine is:
 
 ```bash
-npm ci            # 按 package-lock.json 精确安装
-npm run build     # tsc -noEmit + esbuild production → main.js
-npm run lint      # eslint --max-warnings 0 + stylelint
-npm test          # vitest run
-npm run dev       # esbuild watch（开发时常驻）
+/opt/homebrew/bin/obsidian vault="Obsidian AI Coding" eval code='JSON.stringify({name:app.vault.getName(),path:app.vault.adapter.getBasePath(),configDir:app.vault.configDir})'
 ```
 
-`npm run test:e2e`（wdio）会通过 `obsidian-launcher` 下载真实 Obsidian 桌面版，首次数百 MB，默认不跑。
+For first installation only, verify that the target is absent and copy the three validated runtime artifacts as independent files. Do not copy source `data.json`, create symlinks, or replace the full community-plugin list. Enable only this target plugin.
 
-构建产物 `main.js` 被 `.gitignore` 忽略（与上游一致），不入库。
+For ordinary updates, use the Skill's existing deployment entry, first with `--dry-run`, then without it:
 
-## 四、待决事项
+```bash
+node /Users/peng/Documents/GitHub-Peng/Skills-Peng/obsidian-plugin-dev-peng/scripts/deploy-plugin.mjs \
+  --project /Users/peng/Documents/GitHub-Peng/ObsidianPlugins-Peng/obsidian-inline-embeds-peng \
+  --vault "Obsidian AI Coding" --dry-run
+```
 
-### 1. Pro 门控（未决，本次未改动）
+It verifies matching identities and preserves `data.json`. Reload explicitly in the verified target Vault and check the loaded instance and behavior. Do not modify compiled runtime copies or copy them back over source.
 
-上游把 Pro 功能用 GitHub Sponsors 订阅检查门控：`src/pro.ts` 的 `isPro()` 是唯一判定点，由 `src/license/`（OAuth 设备码 + 赞助状态查询）驱动。**Pro 的代码路径本身就在同一个 bundle 里**，只是被这个布尔值挡住。
+## Acceptance and limits
 
-三条路，按风险从低到高：
+Preserve parser, editor, refresh, cycle/depth, and native-fallback regressions. Test settings and keyboard focus without fake tokens. Validate real desktop behavior separately from mocks and DOM event dispatch. Keep app, installer, platform, production-artifact hashes, data changes, and untested scenarios in `docs/acceptance-1.0.5.md`.
 
-1. **赞助解锁**（零风险）：赞助 `$15` 一次性或 `$5/月`，插件内「Sign in with GitHub」后 Pro 自动开启。不改任何代码，同步最干净。
-2. **本地开关**（自用，不分发）：在 `personal` 分支把 `isPro()` 接成本地配置项。MIT 许可授权修改，但仅限个人使用；对外分发等于绕过作者付费墙，不做。
-3. **暂不处理**：先用 Free 功能。
+WDIO uses temporary fixture Vault copies. Downloaded test applications stay in cache. Close the user instance before E2E: Obsidian creates and removes the shared CLI socket even when `cli=false`. The test service refuses a launch if another process or shared socket exists. Temporary config separation alone is insufficient. Do not use the shared CLI concurrently with an isolated run. No whole-app restart is authorized by targeted plugin reload.
 
-本次初始化**没有碰** `src/license/` 和 `src/pro.ts`。
+No automatic stash/reset/clean, production-Vault deployment, shared Skill changes, or external Worker execution. Preserve upstream source files and unrelated work. The release actions recorded under "Release" are the only authorized commits, pushes, tags, and GitHub Release for this fork.
 
-### 2. Phase 2 改名清单（只记录，未执行）
+## Release
 
-改名要一次性对齐下面所有项，否则会出现「改了一半」的状态：
+| Item | Value |
+| --- | --- |
+| Released version | `1.0.5` |
+| Tag | `1.0.5`, unprefixed, as Obsidian expects |
+| Release URL | `https://github.com/TheodorePeng/obsidian-inline-embeds-peng/releases/tag/1.0.5` |
+| Release assets | `main.js`, `manifest.json`, `styles.css` |
+| Branch | `personal`, the GitHub default branch of the fork |
+| `main` | Unchanged upstream mirror |
 
-- `manifest.json`：`id`、`name`、`author`、`authorUrl`、`fundingUrl`
-- `styles.css` 的 CSS 类名前缀
-- 命令 ID（`inline-block-embeds:*`）
-- 设置页 / 设置项的 key
-- release 资产名、BRAT slug
-- `package.json` 的 `name`、`description`
-- 本地目录名与 GitHub 仓库名
+The release is published manually: build locally, push the branch, push the tag, then create the GitHub Release from the locally built files. The published assets must be byte-identical to the locally verified build, because the release guard compares the downloaded release assets against the local files byte by byte and blocks otherwise.
 
-**`data.json` 迁移警告**：Obsidian 按 `id` 把配置存在 `.obsidian/plugins/<id>/data.json`。改 `id` 会让老用户的设置「消失」（实际是读不到）。迁移只能在插件首次加载时读旧路径，因此**旧 id `inline-block-embeds` 必须长期记录在此**。
+`.github/workflows/release.yml` is inherited from upstream and still builds, tests, attests, and publishes a release. In this fork its trigger is `workflow_dispatch`, so it never races the manual release for the same tag. Re-enabling automatic publishing requires first proving that a Linux build and a local build produce identical bytes.
 
-## 五、红线
+The upstream tags `1.0.0` through `1.0.4` stay in this repository as upstream history markers. They are not releases of this fork, and they are not deleted.
 
-- 不删上游文件（含 `.github/workflows/*`）—— 删了以后每次同步必冲突
-- 不在 fork 上启用 GitHub Actions（上游 `release.yml` 由 tag 触发，fork 上误跑会发 release）
-- 不推送任何 tag
-- 不使用 force push / hard reset
-- `LICENSE` 与版权声明保持原样
+Release notes are bilingual. The English section follows the upstream commit history, and the Chinese section is written by hand rather than left as the machine-generated English draft.

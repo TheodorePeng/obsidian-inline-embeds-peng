@@ -7,11 +7,18 @@ name: Release Obsidian plugin
 # A tag like 1.2.3-beta.1 (pushed from the beta branch) becomes a prerelease
 # for BRAT testers and must not change manifest.json on the default branch.
 
+# Fork-local change: this fork publishes its releases manually, so the published
+# assets stay byte-identical to the locally verified build. The upstream tag
+# trigger is removed so this job cannot race the manual release for the same
+# tag. Run it by hand with the tag to publish, for example 1.0.5.
+# See FORK.md "Release".
 on:
-    push:
-        tags:
-            - '[0-9]+.[0-9]+.[0-9]+'
-            - '[0-9]+.[0-9]+.[0-9]+-*'
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: 'Release tag to publish, for example 1.0.5'
+                required: true
+                type: string
 
 permissions: {}
 
@@ -31,6 +38,7 @@ jobs:
             - uses: actions/checkout@v6
               with:
                   fetch-depth: 0
+                  ref: ${{ inputs.tag }}
 
             - name: Use Node.js
               uses: actions/setup-node@v6
@@ -42,9 +50,13 @@ jobs:
               id: tag
               env:
                   DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+                  RELEASE_TAG: ${{ inputs.tag }}
               run: |
                   set -euo pipefail
-                  tag="${GITHUB_REF#refs/tags/}"
+                  tag="$RELEASE_TAG"
+                  if [ -z "$tag" ]; then
+                      tag="${GITHUB_REF#refs/tags/}"
+                  fi
                   fail() { echo "::error::$*"; exit 1; }
                   case "$tag" in v*) fail "tag $tag has a v prefix; Obsidian needs the bare version" ;; esac
                   jv() { node -e 'const fs=require("fs");process.stdout.write(String(JSON.parse(fs.readFileSync(0,"utf8")).version))'; }
