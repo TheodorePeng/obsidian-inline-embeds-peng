@@ -1,11 +1,10 @@
 {
-	"id": "inline-block-embeds",
-	"name": "Inline Block Embeds",
-	"version": "1.0.4",
+	"id": "inline-embeds-peng",
+	"name": "Inline Embeds Peng",
+	"version": "1.0.5",
 	"minAppVersion": "1.13.4",
 	"description": "Render block embeds inline, inside a sentence, as text in the line, with a hover preview and a jump to the source block.",
-	"author": "Michael Lip",
-	"authorUrl": "https://github.com/theluckystrike",
-	"fundingUrl": "https://github.com/sponsors/theluckystrike",
+	"author": "TheodorePeng",
+	"authorUrl": "https://github.com/TheodorePeng",
 	"isDesktopOnly": false
 }

@@ -3,8 +3,8 @@
 		"feature": "without-plugin",
 		"caption": "Without the plugin, a block embed in a sentence is a framed box that breaks the line.",
 		"note": "Field notes.md",
-		"eval": "(async () => { document.querySelectorAll('.modal-container').forEach(el => el.remove()); const l=app.workspace.getLeaf(false); const s=l.getViewState(); await l.setViewState({...s,state:{...s.state,mode:'source',source:false}}); l.view.editor.setCursor({line:0,ch:0}); await app.plugins.disablePlugin('inline-block-embeds'); app.workspace.getMostRecentLeaf().rebuildView(); await new Promise(r => setTimeout(r, 1500)); return 'ok'; })()",
-		"after": "(async () => { await app.plugins.enablePlugin('inline-block-embeds'); await new Promise(r => setTimeout(r, 300)); app.workspace.getMostRecentLeaf().rebuildView(); await new Promise(r => setTimeout(r, 1200)); return 'ok'; })()",
+		"eval": "(async () => { document.querySelectorAll('.modal-container').forEach(el => el.remove()); const l=app.workspace.getLeaf(false); const s=l.getViewState(); await l.setViewState({...s,state:{...s.state,mode:'source',source:false}}); l.view.editor.setCursor({line:0,ch:0}); await app.plugins.disablePlugin('inline-embeds-peng'); app.workspace.getMostRecentLeaf().rebuildView(); await new Promise(r => setTimeout(r, 1500)); return 'ok'; })()",
+		"after": "(async () => { await app.plugins.enablePlugin('inline-embeds-peng'); await new Promise(r => setTimeout(r, 300)); app.workspace.getMostRecentLeaf().rebuildView(); await new Promise(r => setTimeout(r, 1200)); return 'ok'; })()",
 		"wait": 600
 	},
 	{
@@ -73,26 +73,26 @@
 	},
 	{
 		"feature": "list-items",
-		"caption": "Pro: a list item block is inline too, without its bullet and task box.",
+		"caption": "a list item block is inline too, without its bullet and task box.",
 		"note": "Field notes.md",
-		"eval": "(async () => { const p=app.plugins.plugins['inline-block-embeds']; p.pro.opts.http = async () => ({ status: 200, json: { data: { viewer: { login: 'demo-reader' }, user: { sponsorshipForViewerAsSponsor: { isActive: true, isOneTimePayment: false, tier: { name: '$5 a month', monthlyPriceInCents: 500 } } } } } }); app.secretStorage.setSecret('inline-block-embeds-github-token', 'gho_' + '0'.repeat(36)); await p.pro.refreshNow(); const l=app.workspace.getLeaf(false); const s=l.getViewState(); await l.setViewState({...s,state:{...s.state,mode:'source',source:false}}); l.view.editor.setCursor({line:0,ch:0}); for (let i=0;i<40 && document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length<4;i++) await new Promise(r=>setTimeout(r,100)); const n=document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length; if (n<4) throw new Error('inline spans: '+n); return n; })()",
-		"after": "(async () => { const p=app.plugins.plugins['inline-block-embeds']; p.settings.drawAll=false; p.settings.style='underline'; p.pro.signOut(); p.redrawAll(); return 'ok'; })()",
+		"eval": "(async () => { const l=app.workspace.getLeaf(false); const s=l.getViewState(); await l.setViewState({...s,state:{...s.state,mode:'source',source:false}}); l.view.editor.setCursor({line:0,ch:0}); for (let i=0;i<40 && document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length<4;i++) await new Promise(r=>setTimeout(r,100)); const n=document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length; if (n<4) throw new Error('inline spans: '+n); return n; })()",
+		"after": "(async () => { const p=app.plugins.plugins['inline-embeds-peng']; p.settings.drawAll=false; p.settings.style='underline'; p.redrawAll(); return 'ok'; })()",
 		"wait": 900,
 		"zoom": 1.2
 	},
 	{
 		"feature": "styles",
-		"caption": "Pro: draw every block embed inline, here with the soft background style.",
+		"caption": "draw every block embed inline, here with the soft background style.",
 		"note": "Field notes.md",
-		"eval": "(async () => { const p=app.plugins.plugins['inline-block-embeds']; p.pro.opts.http = async () => ({ status: 200, json: { data: { viewer: { login: 'demo-reader' }, user: { sponsorshipForViewerAsSponsor: { isActive: true, isOneTimePayment: false, tier: { name: '$5 a month', monthlyPriceInCents: 500 } } } } } }); app.secretStorage.setSecret('inline-block-embeds-github-token', 'gho_' + '0'.repeat(36)); await p.pro.refreshNow(); p.settings.drawAll=true; p.settings.style='background'; p.redrawAll(); const l=app.workspace.getLeaf(false); const s=l.getViewState(); await l.setViewState({...s,state:{...s.state,mode:'source',source:false}}); l.view.editor.setCursor({line:0,ch:0}); for (let i=0;i<40 && document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length<4;i++) await new Promise(r=>setTimeout(r,100)); const n=document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length; if (n<4) throw new Error('inline spans: '+n); for (let i=0;i<40 && !document.querySelector('.workspace-leaf.mod-active .cm-content > .ibe-line');i++) await new Promise(r=>setTimeout(r,100)); if (!document.querySelector('.workspace-leaf.mod-active .cm-content > .ibe-line')) throw new Error('no line embed'); return 'ok'; })()",
-		"after": "(async () => { const p=app.plugins.plugins['inline-block-embeds']; p.settings.drawAll=false; p.settings.style='underline'; p.pro.signOut(); p.redrawAll(); return 'ok'; })()",
+		"eval": "(async () => { const p=app.plugins.plugins['inline-embeds-peng']; p.settings.drawAll=true; p.settings.style='background'; p.redrawAll(); const l=app.workspace.getLeaf(false); const s=l.getViewState(); await l.setViewState({...s,state:{...s.state,mode:'source',source:false}}); l.view.editor.setCursor({line:0,ch:0}); for (let i=0;i<40 && document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length<4;i++) await new Promise(r=>setTimeout(r,100)); const n=document.querySelectorAll('.workspace-leaf.mod-active .cm-line .ibe-inline').length; if (n<4) throw new Error('inline spans: '+n); for (let i=0;i<40 && !document.querySelector('.workspace-leaf.mod-active .cm-content > .ibe-line');i++) await new Promise(r=>setTimeout(r,100)); if (!document.querySelector('.workspace-leaf.mod-active .cm-content > .ibe-line')) throw new Error('no line embed'); return 'ok'; })()",
+		"after": "(async () => { const p=app.plugins.plugins['inline-embeds-peng']; p.settings.drawAll=false; p.settings.style='underline'; p.redrawAll(); return 'ok'; })()",
 		"wait": 900,
 		"zoom": 1.2
 	},
 	{
 		"feature": "settings",
-		"caption": "The settings: draw every block embed inline and the inline style (Pro).",
-		"eval": "(async () => { app.setting.open(); app.setting.openTabById('inline-block-embeds'); await new Promise(r => setTimeout(r, 800)); return 'ok'; })()",
+		"caption": "The settings: draw every block embed inline and the inline style.",
+		"eval": "(async () => { app.setting.open(); app.setting.openTabById('inline-embeds-peng'); await new Promise(r => setTimeout(r, 800)); return 'ok'; })()",
 		"after": "(async () => { app.setting.close(); return 'ok'; })()",
 		"wait": 700
 	},

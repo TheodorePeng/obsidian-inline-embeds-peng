@@ -138,30 +138,6 @@ async function openHost(): Promise<void> {
 	await waitForLine('Confirm', 'Confirm the facts in Hello world today.');
 }
 
-/** Pro on: a stubbed GitHub Sponsors reply ($5 a month) and a fake token, then Refresh. Pro off: sign out. No real request. */
-async function setPro(on: boolean): Promise<void> {
-	await browser.executeObsidian(
-		async ({ app }, id, value) => {
-			interface Pro {
-				opts: { http: unknown };
-				refreshNow(): Promise<void>;
-				signOut(): void;
-			}
-			const p = (app as unknown as { plugins: { plugins: Record<string, { pro: Pro }> } }).plugins.plugins[id]!;
-			if (!value) {
-				p.pro.signOut();
-				return;
-			}
-			const reply = { status: 200, json: { data: { viewer: { login: 'demo-reader' }, user: { sponsorshipForViewerAsSponsor: { isActive: true, isOneTimePayment: false, tier: { name: '$5 a month', monthlyPriceInCents: 500 } } } } } };
-			p.pro.opts.http = () => Promise.resolve(reply);
-			app.secretStorage.setSecret(`${id}-github-token`, 'gho_' + '0'.repeat(36));
-			await p.pro.refreshNow();
-		},
-		pluginId,
-		on,
-	);
-}
-
 async function setSettings(values: Record<string, unknown>): Promise<void> {
 	await browser.executeObsidian(
 		({ app }, id, v) => {
@@ -193,7 +169,7 @@ describe(`${pluginId} in the real app`, function () {
 			window.addEventListener('error', (e) => errors.push(String(e.message)));
 			window.addEventListener('unhandledrejection', (e) => errors.push(String(e.reason)));
 		});
-		await setPro(false);
+		await setSettings({ drawAll: false, style: 'underline' });
 		await writeNote('A.md', SOURCE);
 		await writeNote('Host.md', HOST);
 		await openHost();
@@ -225,7 +201,7 @@ describe(`${pluginId} in the real app`, function () {
 				tableBox: blocks.some((e) => e.querySelector('table') !== null),
 			};
 		}, ACTIVE);
-		expect(info).toEqual({ spans: 2, aloneBox: true, tableBox: true });
+		expect(info).toEqual({ spans: 3, aloneBox: true, tableBox: true });
 	});
 
 	it('rule 17: a missing block shows its alias in the unresolved style', async function () {
@@ -236,8 +212,9 @@ describe(`${pluginId} in the real app`, function () {
 		expect(missing).toBe('see');
 	});
 
-	it('free: a list item block is not drawn inline', async function () {
-		expect(await inlineIn('Task:')).toBe(0);
+	it('a list item block is drawn inline without an account', async function () {
+		await waitForLine('Task:', 'Task: Call Bob now.');
+		expect(await inlineIn('Task:')).toBe(1);
 	});
 
 	it('criterion 7: moving the cursor into the embed shows the raw link', async function () {
@@ -301,7 +278,7 @@ describe(`${pluginId} in the real app`, function () {
 				count: view.querySelectorAll('.ibe-inline').length,
 			};
 		}, ACTIVE);
-		expect(info).toEqual({ tag: 'SPAN', paragraph: 'Confirm the facts in Hello world today.', unresolved: 'see', count: 2 });
+		expect(info).toEqual({ tag: 'SPAN', paragraph: 'Confirm the facts in Hello world today.', unresolved: 'see', count: 3 });
 		await setMode('source');
 		await setCursor(8, 0);
 		await waitForLine('Confirm', 'Confirm the facts in Hello world today.');
@@ -562,8 +539,7 @@ describe(`${pluginId} in the real app`, function () {
 		expect(spans).toBe(1);
 	});
 
-	it('Pro: list items, draw every block embed inline, and the soft background style', async function () {
-		await setPro(true);
+	it('list items, draw every block embed inline, and the soft background style without authorization', async function () {
 		await openHost();
 		await waitForLine('Task:', 'Task: Call Bob now.');
 		expect(await inlineIn('Hello world')).toBe(-1);
@@ -582,7 +558,6 @@ describe(`${pluginId} in the real app`, function () {
 		const cls = await browser.execute((sel: string) => document.querySelector(`${sel} .cm-line .ibe-inline`)?.className ?? '', ACTIVE);
 		expect(cls).toContain('ibe-style-background');
 		await setSettings({ drawAll: false, style: 'underline' });
-		await setPro(false);
 		await openHost();
 	});
 

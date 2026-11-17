@@ -1,16 +1,9 @@
 import { MarkdownView, Plugin, TFile, debounce } from 'obsidian';
-import type { SponsorsManager } from './license/index';
-import { createGitHubSponsors } from './license/github-obsidian';
-import { SPONSORS, bindPro, isPro, onProChange, resetPro } from './pro';
 import { DEFAULT_SETTINGS, InlineBlockEmbedsSettingTab, effectiveOptions, normalizeSettings, type InlineBlockEmbedsSettings } from './settings';
 import { InlineEmbeds } from './render';
 import { inlineEmbedExtension, redrawViews } from './editor';
 import { ReadingView } from './reading';
-import { setupHello } from './hello/index';
-import WHATS_NEW from './whats-new.json';
 
-/** How often to ask the license state whether a check is due. It sends a request only when signed in and due (7 days). */
-const PRO_TICK_MS = 6 * 60 * 60 * 1000;
 /** Wait after the last edit in a source note before the inline text follows it. */
 const EDIT_DELAY_MS = 250;
 /** Wait after the last rename event before the redraw. */
@@ -20,32 +13,19 @@ const ORPHAN_SWEEP_MS = 30_000;
 
 export default class InlineBlockEmbedsPlugin extends Plugin {
 	settings: InlineBlockEmbedsSettings = { ...DEFAULT_SETTINGS };
-	/** GitHub Sponsors Pro state. Created in onload; null before that. */
-	pro: SponsorsManager | null = null;
 	/** Resolves and draws the inline spans. Created in onload. */
 	inline: InlineEmbeds | null = null;
 	/** The Reading view post processor. Created in onload. */
 	reading: ReadingView | null = null;
-	private settingTab: InlineBlockEmbedsSettingTab | null = null;
 	private editTimers = new Map<string, number>();
 
 	async onload(): Promise<void> {
-		// First: "What's new" reads its state before the settings load (packages/hello). It does not wait.
-		setupHello(this, WHATS_NEW);
 		await this.loadSettings();
-		// No request here: a request needs a GitHub sign in first (Settings, Pro, Sign in with GitHub).
-		const pro = createGitHubSponsors(this.app, this.manifest.id, SPONSORS, this);
-		pro.init();
-		this.pro = pro;
-		bindPro(pro);
-		this.register(pro.onChange(() => this.settingTab?.update()));
-		this.register(onProChange(() => this.redrawAll()));
-		this.settingTab = new InlineBlockEmbedsSettingTab(this.app, this);
-		this.addSettingTab(this.settingTab);
+		this.addSettingTab(new InlineBlockEmbedsSettingTab(this.app, this));
 
-		const inline = new InlineEmbeds(this.app, this.manifest.id, () => effectiveOptions(this.settings, isPro()));
+		const inline = new InlineEmbeds(this.app, this.manifest.id, () => effectiveOptions(this.settings));
 		this.inline = inline;
-		this.registerHoverLinkSource(this.manifest.id, { display: 'Inline Block Embeds', defaultMod: false });
+		this.registerHoverLinkSource(this.manifest.id, { display: this.manifest.name, defaultMod: false });
 		this.registerEditorExtension(inlineEmbedExtension(inline));
 		const reading = new ReadingView(inline);
 		this.reading = reading;
@@ -104,8 +84,6 @@ export default class InlineBlockEmbedsPlugin extends Plugin {
 		this.register(() => afterRename.cancel());
 
 		this.app.workspace.onLayoutReady(() => {
-			void pro.refresh();
-			this.registerInterval(window.setInterval(() => void pro.refresh(), PRO_TICK_MS));
 			this.redrawAll();
 		});
 	}
@@ -115,7 +93,6 @@ export default class InlineBlockEmbedsPlugin extends Plugin {
 		this.editTimers.clear();
 		this.inline?.clear();
 		this.inline = null;
-		resetPro();
 		this.rerenderReading();
 	}
 
@@ -124,7 +101,7 @@ export default class InlineBlockEmbedsPlugin extends Plugin {
 		redrawViews();
 	}
 
-	/** Settings or Pro changed: redraw editors and Reading views. */
+	/** Settings changed: redraw editors and Reading views. */
 	redrawAll(): void {
 		this.redrawEditors();
 		this.rerenderReading();

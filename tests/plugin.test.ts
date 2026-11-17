@@ -19,9 +19,10 @@ describe('InlineBlockEmbedsPlugin', () => {
 		expect(normalizeSettings({ style: 'background' }).style).toBe('background');
 	});
 
-	it('keeps the Pro options off without Pro', () => {
-		const saved = { drawAll: true, style: 'none' as const };
-		expect(effectiveOptions(saved, false)).toEqual({ drawAll: false, listItems: false, style: 'underline' });
-		expect(effectiveOptions(saved, true)).toEqual({ drawAll: true, listItems: true, style: 'none' });
+	it('makes every supported feature available without an account', () => {
+		expect(effectiveOptions(DEFAULT_SETTINGS)).toEqual({ drawAll: false, listItems: true, style: 'underline' });
+		for (const style of ['underline', 'background', 'none'] as const) {
+			expect(effectiveOptions({ drawAll: true, style })).toEqual({ drawAll: true, listItems: true, style });
+		}
 	});
 });

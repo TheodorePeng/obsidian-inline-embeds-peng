@@ -1,4 +1,4 @@
-/* Styles for Inline Block Embeds. Obsidian loads this file while the plugin is enabled. */
+/* Styles for Inline Embeds Peng. Obsidian loads this file while the plugin is enabled. */
 
 /* Rule 10: the block text flows in the line. No frame and no icon, only a quiet underline. */
 .ibe-inline {
@@ -39,25 +39,4 @@
 /* Rule 18: a loop or a level past the limit shows the link text. */
 .ibe-link-text {
 	color: var(--text-muted);
-}
-
-/* NoteMods What's new tab and settings card */
-.notemods-hello {
-	overflow-y: auto;
-}
-
-.notemods-hello-page {
-	max-width: var(--file-line-width);
-	margin: 0 auto;
-	padding: var(--size-4-6) var(--size-4-4);
-}
-
-.notemods-hello-sub,
-.notemods-hello-blurb {
-	color: var(--text-muted);
-}
-
-.notemods-hello-buttons .setting-item-control {
-	flex-wrap: wrap;
-	justify-content: flex-start;
 }

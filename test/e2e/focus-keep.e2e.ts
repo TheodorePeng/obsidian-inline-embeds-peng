@@ -1,10 +1,7 @@
 import { $, browser, expect } from '@wdio/globals';
 import { pluginId } from './load';
 
-// Keyboard focus after a refused Pro setting (s1028 FOCUS). A free user changes a Pro control with a real key. The
-// plugin refuses the change, shows the Pro notice and draws the tab again. The keyboard focus must stay on the control
-// of the same row. Obsidian can open the settings in a second window (activeWindow), so the test sends the keys to the
-// window that shows the settings tab.
+// A real keyboard selection must save immediately without a paid-feature notice or lost focus.
 const ROW = 'Inline style';
 
 type Host = {
@@ -36,7 +33,7 @@ const where = (): Promise<Where> =>
 		};
 	}, ROW);
 
-describe(`${pluginId} keyboard focus after a refused Pro setting`, function () {
+describe(`${pluginId} keyboard focus after a saved setting`, function () {
 	let main = '';
 	after(async function () {
 		if (main) await browser.switchToWindow(main);
@@ -46,16 +43,10 @@ describe(`${pluginId} keyboard focus after a refused Pro setting`, function () {
 		});
 	});
 
-	it(`a free user who changes "${ROW}" with a key keeps the keyboard focus on that control (desktop only: phone and tablet have no keyboard focus ring)`, async function () {
+	it(`a user who changes "${ROW}" with a key keeps the keyboard focus on that control (desktop only: phone and tablet have no keyboard focus ring)`, async function () {
 		if (await browser.executeObsidian(({ obsidian }) => obsidian.Platform.isMobile)) this.skip();
 		main = await browser.getWindowHandle();
-		// A free user: sign out of each Pro manager of the plugin, then open the settings tab of the plugin.
 		await browser.executeObsidian(({ app }, id) => {
-			const plugin = (app as unknown as Host).plugins.plugins[id]!;
-			for (const value of Object.values(plugin)) {
-				const signOut = (value as { signOut?: unknown } | null)?.signOut;
-				if (typeof signOut === 'function') (signOut as () => void).call(value);
-			}
 			activeDocument.querySelectorAll('.notice').forEach((n) => n.remove());
 			const setting = (app as unknown as Host).setting;
 			setting.open();
@@ -98,26 +89,15 @@ describe(`${pluginId} keyboard focus after a refused Pro setting`, function () {
 		}, ROW);
 		const before = await where();
 		expect({ hasFocus: before.hasFocus, row: before.row }).toEqual({ hasFocus: true, row: ROW });
-		// A real key changes the control. The plugin refuses the change and shows the Pro notice.
+		// WebDriver sends a real key to the focused native select.
 		await $('[data-focus-test="1"]').addValue(key);
-		await browser
-			.waitUntil(async () => (await where()).notices > 0, { timeout: 5000 })
-			.catch(() => undefined);
-		await browser.pause(500);
+		await browser.waitUntil(async () => (await where()).value !== before.value, { timeout: 5000 });
 		const after = await where();
-		expect({ notices: after.notices > 0, value: after.value }).toEqual({ notices: true, value: before.value });
-		// Obsidian drew the tab again. The keyboard focus is still on the control of the same row.
-		expect({ tag: after.tag, row: after.row }).toEqual({ tag: before.tag, row: ROW });
-		// The same key 2 more times on the focused control: each change is refused again, but only 1 Pro notice shows.
-		for (let i = 0; i < 2; i++) {
-			await browser.execute(() => {
-				document.querySelectorAll('[data-focus-test]').forEach((e) => e.removeAttribute('data-focus-test'));
-				(document.activeElement as HTMLElement | null)?.setAttribute('data-focus-test', '1');
-			});
-			await $('[data-focus-test="1"]').addValue(key);
-			await browser.pause(500);
-		}
-		const third = await where();
-		expect({ notices: third.notices, value: third.value, tag: third.tag, row: third.row }).toEqual({ notices: 1, value: before.value, tag: before.tag, row: ROW });
+		expect({ notices: after.notices, tag: after.tag, row: after.row }).toEqual({ notices: 0, tag: before.tag, row: ROW });
+		const saved = await browser.executeObsidian(async ({ app }, id) => {
+			const p = (app as unknown as { plugins: { plugins: Record<string, { loadData(): Promise<{ style: string }> }> } }).plugins.plugins[id]!;
+			return (await p.loadData()).style;
+		}, pluginId);
+		expect(saved).toBe(after.value);
 	});
 });

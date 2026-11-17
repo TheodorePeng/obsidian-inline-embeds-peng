@@ -1,14 +1,11 @@
-import { PluginSettingTab, type Notice, type SettingDefinitionItem } from 'obsidian';
-import { sponsorsSettingItems, redrawKeepFocus } from './license/github-obsidian';
-import { PRO_UI, isPro, proNotice } from './pro';
+import { PluginSettingTab, type SettingDefinitionItem } from 'obsidian';
 import type { EmbedStyle, Options } from './render';
 import type InlineBlockEmbedsPlugin from './main';
-import { helloSettingItems } from './hello/settings';
 
 export interface InlineBlockEmbedsSettings {
-	/** Pro: also draw a block embed that is alone on its line inline (rule 3). */
+	/** Also draw a block embed that is alone on its line inline (rule 3). */
 	drawAll: boolean;
-	/** Pro: the look of the inline text. Free uses the dotted underline. */
+	/** The look of the inline text. */
 	style: EmbedStyle;
 }
 
@@ -32,25 +29,16 @@ export function normalizeSettings(saved: Partial<InlineBlockEmbedsSettings> | nu
 	};
 }
 
-/** The settings in effect. Without Pro: paragraphs only, no "draw every embed", the underline style. */
-export function effectiveOptions(settings: InlineBlockEmbedsSettings, pro: boolean): Options {
+/** All supported block kinds are available; appearance follows the user's settings. */
+export function effectiveOptions(settings: InlineBlockEmbedsSettings): Options {
 	return {
-		drawAll: pro && settings.drawAll,
-		listItems: pro,
-		style: pro ? settings.style : 'underline',
+		drawAll: settings.drawAll,
+		listItems: true,
+		style: settings.style,
 	};
 }
 
-/** First sentences of the Pro notices. A free user who selects a Pro setting gets the notice; the value is not saved. */
-export const PRO_LEADS: Partial<Record<keyof InlineBlockEmbedsSettings, string>> = {
-	drawAll: 'Drawing every block embed inline is a Pro feature.',
-	style: 'The soft background and none styles are Pro features.',
-};
-
 export class InlineBlockEmbedsSettingTab extends PluginSettingTab {
-	/** The last Pro notice of this tab and its lead. The same notice does not show again while it is open. */
-	private notice: Notice | null = null;
-	private noticeLead = '';
 	plugin: InlineBlockEmbedsPlugin;
 
 	constructor(app: ConstructorParameters<typeof PluginSettingTab>[0], plugin: InlineBlockEmbedsPlugin) {
@@ -59,54 +47,25 @@ export class InlineBlockEmbedsSettingTab extends PluginSettingTab {
 	}
 
 	getSettingDefinitions(): SettingDefinitionItem[] {
-		// The product rows, then the "More from NoteMods" card (packages/hello).
-		return [...this.productSettingDefinitions(), ...helloSettingItems()];
+		return this.productSettingDefinitions();
 	}
 
 	productSettingDefinitions(): SettingDefinitionItem[] {
 		return [
 			{
 				name: 'Draw every block embed inline',
-				desc: 'Pro. Also draw a block embed that is alone on its line as inline text. When this is off, only an embed with other text on its line is inline.',
+				desc: 'Also draw a block embed that is alone on its line as inline text. When this is off, only an embed with other text on its line is inline.',
 				control: { type: 'toggle', key: 'drawAll', defaultValue: DEFAULT_SETTINGS.drawAll },
 			},
 			{
 				name: 'Inline style',
-				desc: 'Pro. How the inline text looks. The free version uses the dotted underline.',
+				desc: 'How the inline text looks.',
 				control: { type: 'dropdown', key: 'style', defaultValue: DEFAULT_SETTINGS.style, options: { ...STYLES } },
 			},
-			{
-				name: 'Pro features',
-				desc: isPro()
-					? 'Pro is on: list item blocks are inline, and the two settings above work.'
-					: 'Free version: paragraph blocks inside a sentence are inline, with a hover preview and Ctrl or Cmd click to open the source. Pro adds list item blocks, the setting to draw every block embed inline, and two more styles.',
-			},
-			// The Pro group comes after the settings of the plugin.
-			...(this.plugin.pro ? sponsorsSettingItems(this.plugin.pro, PRO_UI) : []),
 		];
 	}
 
-	getControlValue(key: string): unknown {
-		// A free user sees the values in effect. The stored choice stays for the time that Pro comes back.
-		if ((key === 'drawAll' || key === 'style') && !isPro()) return effectiveOptions(this.plugin.settings, false)[key];
-		return super.getControlValue(key);
-	}
-
 	async setControlValue(key: string, value: unknown): Promise<void> {
-		const lead = PRO_LEADS[key as keyof InlineBlockEmbedsSettings];
-		if (lead && !isPro()) {
-			// Free users can select the Pro settings: the notice shows what Pro adds and how to get it. Nothing is saved.
-			// One notice at a time for the same Pro setting: a repeated key on the focused control adds no new notice.
-			const noticeLead = lead;
-			if (!this.notice?.messageEl.isConnected || this.noticeLead !== noticeLead) {
-				this.notice = proNotice(noticeLead);
-				this.noticeLead = noticeLead;
-			}
-			// Obsidian does not draw a control again while it has the focus. Move the focus out, then draw the tab
-			// again, so the row shows the value in effect.
-			redrawKeepFocus(this);
-			return;
-		}
 		await super.setControlValue(key, value);
 		this.plugin.settings = normalizeSettings(this.plugin.settings);
 		this.plugin.redrawAll();
